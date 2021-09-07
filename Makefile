@@ -17,7 +17,7 @@ gomod/init: ## init go mod
 gomod/vendor: ## vendor Go dependencies
 	## see https://github.com/golang/go/issues/35164#issuecomment-546503518
 	## without GOSUMDB=off we get:
-	##   verifying github.com/auth0/platform-interface-auth@v1.0.1: github.com/auth0/platform-interface-auth@v1.0.1: reading https://sum.golang.org/lookup/github.com/auth0/platform-interface-auth@v1.0.1: 410 Gone
+	##   verifying github.com/xxxx/xxxxxx@v1.0.1: github.com/xxxx/xxxxxx@v1.0.1: reading https://sum.golang.org/lookup/github.com/xxxx/xxxxxx@v1.0.1: 410 Gone
 	GOSUMDB=off go mod tidy
 	GOSUMDB=off go mod vendor -v
 

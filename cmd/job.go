@@ -5,25 +5,37 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
 	"time"
 
 	"github.com/gofrs/flock"
 	"github.com/vmogilev/deployer/internal/env"
+	"github.com/vmogilev/deployer/pkg/deployer"
 )
 
 type job struct {
-	verbose     bool
-	forceUnLock bool
-	log         *log.Logger
-	vars        *env.Vars
-	lockHandle  *flock.Flock
+	verbose    bool
+	log        *log.Logger
+	vars       *env.Vars
+	lockHandle *flock.Flock
+}
+
+func (j *job) mkdirAll(path string) {
+	if err := os.MkdirAll(path, 0700); err != nil {
+		j.abort(err.Error())
+	}
+}
+
+func (j *job) init() {
+	j.mkdirAll(j.vars.DeployerLogsDir)
+	j.mkdirAll(filepath.Join(j.vars.DeployerConfigDir, deployer.DirNameRunList))
+	j.mkdirAll(filepath.Join(j.vars.DeployerConfigDir, deployer.DirNameTemplates))
+	j.mkdirAll(filepath.Join(j.vars.DeployerConfigDir, deployer.DirNameCache))
+	j.mkdirAll(filepath.Dir(j.vars.DeployerLockFile))
 }
 
 func (j *job) lock() {
 	j.lockHandle = flock.New(j.vars.DeployerLockFile)
-	if j.forceUnLock {
-		j.unlock()
-	}
 
 	var cnt int
 	ticker := time.NewTicker(time.Second)

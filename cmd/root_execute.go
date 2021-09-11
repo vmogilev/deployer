@@ -60,17 +60,17 @@ deployer execute --dryRun=false
 		log.SetOutput(mw)
 
 		j := &job{
-			vars:        vars,
-			verbose:     viper.GetBool("verbose"),
-			forceUnLock: viper.GetBool("forceUnLock"),
-			log:         log,
+			vars:    vars,
+			verbose: viper.GetBool("verbose"),
+			log:     log,
 		}
-
 		j.lock()
 		defer j.unlock()
+		j.init()
 
 		sdk := deployer.NewSDK(j.log, &deployer.SDKInput{
 			Verbose: j.verbose,
+			Vars:    vars,
 		})
 		if err := sdk.Execute(context.Background(), &deployer.ExecuteInput{
 			DryRun: viper.GetBool("dryRun"),
@@ -85,6 +85,5 @@ func init() {
 	rootCmd.AddCommand(executeCmd)
 	executeCmd.Flags().BoolP("verbose", "v", false, "verbose")
 	executeCmd.Flags().Bool("dryRun", true, "dryRun")
-	executeCmd.Flags().BoolP("forceUnLock", "f", false, "force unlock")
 	executeCmd.Flags().Bool("forceReconcile", false, "force reconcile")
 }

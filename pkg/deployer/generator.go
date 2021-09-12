@@ -1,10 +1,10 @@
 package deployer
 
 import (
-	"html/template"
 	"io"
 	"io/fs"
 	"path/filepath"
+	"text/template"
 )
 
 // Generator maintains a list of all known file templates

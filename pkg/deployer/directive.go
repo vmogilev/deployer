@@ -7,7 +7,9 @@ import (
 
 type Directive interface {
 	Name() string
-	Init(data []byte, aa *Attributes) error
+	FileName(in int) string
+	Hydrate(data []byte) error
+	Init(x *SDK, aa *Attributes) error
 	Execute(ctx context.Context, in *ExecuteInput) error
 }
 
@@ -19,7 +21,15 @@ func (d *unimplementedDirective) Name() string {
 	return fmt.Sprintf("%s directive not implemented", d.name)
 }
 
-func (d *unimplementedDirective) Init(data []byte, aa *Attributes) error {
+func (d *unimplementedDirective) FileName(in int) string {
+	return fmt.Sprintf("%s directive not implemented", d.name)
+}
+
+func (d *unimplementedDirective) Hydrate(data []byte) error {
+	return fmt.Errorf(d.Name())
+}
+
+func (d *unimplementedDirective) Init(x *SDK, aa *Attributes) error {
 	return fmt.Errorf(d.Name())
 }
 
@@ -28,10 +38,10 @@ func (d *unimplementedDirective) Execute(ctx context.Context, in *ExecuteInput) 
 }
 
 // DirectiveFromName - constructs new directive by its name
-func (x *SDK) DirectiveFromName(name string) Directive {
+func DirectiveFromName(name string) Directive {
 	switch name {
 	case DirectiveNameGenerateFile:
-		return &GenerateFile{x: x}
+		return &GenerateFile{}
 	default:
 		return &unimplementedDirective{name: name}
 	}

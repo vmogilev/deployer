@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"path/filepath"
 )
 
 // Generator maintains a list of all known file templates
@@ -20,15 +21,21 @@ func NewGenerator(rootDir string) *Generator {
 	}
 }
 
-// Parse - parses all templates found in fs/*
-func (t *Generator) Parse(fs fs.FS, name string) error {
+// ParseFromBuild - parses all templates compiled at build-time in go:embed fs/*
+func (g *Generator) ParseFromBuild(fs fs.FS, pat string) error {
 	var err error
-	//t.all[subDir], err = template.New(subDir).ParseGlob(filepath.Join(t.rootDir, subDir, "*"))
-	t.all[name], err = template.New(name).ParseFS(fs, "*")
+	g.all[BaseTemplates], err = template.New(pat).ParseFS(fs, pat)
+	return err
+}
+
+// ParseFromFS - parses all templates from local file system
+func (g *Generator) ParseFromFS(subDir string) error {
+	var err error
+	g.all[BaseTemplates], err = template.New(subDir).ParseGlob(filepath.Join(g.rootDir, subDir, "*"))
 	return err
 }
 
 // Execute - executes previously parsed template by its name, pushing result to wr
-func (t *Generator) Execute(wr io.Writer, name string, data interface{}) error {
-	return t.all[DirNameTemplates].ExecuteTemplate(wr, name, data)
+func (g *Generator) Execute(wr io.Writer, name string, data interface{}) error {
+	return g.all[BaseTemplates].ExecuteTemplate(wr, name, data)
 }

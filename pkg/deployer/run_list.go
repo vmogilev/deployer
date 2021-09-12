@@ -1,8 +1,14 @@
 package deployer
 
+import "path/filepath"
+
 type RunList struct {
 	Name string
 	All  []Directive
+}
+
+func (l *RunList) BasePath(configDir string) string {
+	return filepath.Join(configDir, DirNameRunList, l.Name)
 }
 
 const (
@@ -15,10 +21,10 @@ var seededRunLists = map[string]*RunList{
 		All: []Directive{
 			&GenerateFile{
 				Path:     "/etc/nginx/sites-available/hello-world.com",
-				OwnerID:  33, // www-data
-				GroupID:  33, // www-data
+				Owner:    "www-data",
+				Group:    "www-data",
 				Mode:     0640,
-				Template: "hello-world.com",
+				Template: "nginx-site",
 				Data:     nil,
 			},
 		},

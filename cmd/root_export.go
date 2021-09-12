@@ -13,7 +13,7 @@ import (
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "exports embedded run-list to ${DEPLOYER_CONFIG_DIR}",
+	Short: "exports embedded run-list to ${DEPLOYER_CONFIG_DIR}/{runList}",
 	Long: `
 `,
 	Run: func(cmd *cobra.Command, args []string) {

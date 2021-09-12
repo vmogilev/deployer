@@ -11,6 +11,7 @@ import (
 var templatesALL embed.FS
 
 // ExecuteFromBuild - executes All directives from seededRunLists
+// and uses templates embedded in the binary instead of os directory
 func (x *SDK) ExecuteFromBuild(ctx context.Context, in *ExecuteInput) error {
 	if in.ListOnly {
 		for l := range seededRunLists {

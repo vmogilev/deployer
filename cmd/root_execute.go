@@ -18,20 +18,44 @@ import (
 // executeCmd represents the execute command
 var executeCmd = &cobra.Command{
 	Use:   "execute",
-	Short: "executes deployer daemon and applies all pending run-lists in ${DEPLOYER_CONFIG_DIR}/run-list",
+	Short: "executes deployer daemon and applies --runList directives from --source (see below)",
 	Long: `
 
-Deployer encodes run-list directives in its codebase and applies them by iterating over a run-list.
+Executes deployer daemon and applies --runList directives from --source:
+
+   --source=build :: (default) directives and templates are sourced from the binary (embedded) 
+   --source=file  :: directives and templates are sourced from ${DEPLOYER_CONFIG_DIR}/run/{runList}
+
 By default, it runs in dry-run mode and will only print the actions it's about to take.  
 To apply the changes, add --dryRun=false flag.
 
-EXAMPLE:
+EXAMPLES:
 
-## dry run all pending changes
-deployer execute
+## list available run-lists from build (embedded)
+deployer execute -l
 
-## apply all pending changes
-deployer execute --dryRun=false
+## list available run-lists from from ${DEPLOYER_CONFIG_DIR}/run/
+deployer execute -l -s file
+
+## dry run all directives for hello-world runList from build (embedded)
+deployer execute -r hello-world
+
+## apply all directives for hello-world runList from build (embedded)
+deployer execute -r hello-world --dryRun=false
+
+## apply all directives for hello-world runList from ${DEPLOYER_CONFIG_DIR}/run/hello-world
+deployer execute -r hello-world -s file --dryRun=false
+
+
+ENV VARs:
+	DEPLOYER_CONFIG_DIR	  default:/etc/deployer
+	DEPLOYER_LOGS_DIR     default:/var/log/deployer
+	DEPLOYER_LOCK_FILE    default:/var/lock/deployer.lock
+	LOCK_TIMEOUT_SECONDS  default:15
+
+
+Concurrency:
+	Deployer can safely run as daemon/cronjob since it takes an exclusive lock via ${DEPLOYER_LOCK_FILE}
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		log := log.New(os.Stdout, "", log.Lshortfile|log.LstdFlags|log.LUTC)

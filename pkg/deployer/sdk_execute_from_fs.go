@@ -20,7 +20,7 @@ func (x *SDK) ExecuteFromFS(ctx context.Context, in *ExecuteInput) error {
 		}
 		for _, l := range ll {
 			if l.IsDir() {
-				fmt.Printf("%s\n", l)
+				fmt.Printf("%s\n", l.Name())
 			}
 		}
 		return nil

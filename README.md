@@ -27,10 +27,14 @@ done
 ```
 ### 2. Invoke Configuration (demo application)
 ```shell
-## dry-run
+## list available run-lists
+# ./deployer execute -l
+hello-world
+
+## dry-run hello-world run-list
 ./deployer execute -r hello-world
 
-## real
+## execute for real
 ./deployer execute -r hello-world --dryRun=false
 ```
 ### 3. Verify Demo Application Works 
@@ -227,6 +231,12 @@ It's a great way to get familiar with its architecture:
 * [RunListHelloWorld](pkg/deployer/run_list_hello_world.go)
 #### Execute Hello-World
 ```shell
+## list available run-list (embedded)
+deployer execute -l
+
+## list available run-list (file system)
+deployer execute -l -s file
+
 ## from embedded run-list
 deployer execute -r hello-world --dryRun=false
 

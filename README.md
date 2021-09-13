@@ -237,10 +237,10 @@ deployer execute -l
 ## list available run-list (file system)
 deployer execute -l -s file
 
-## from embedded run-list
+## execute embedded run-list
 deployer execute -r hello-world --dryRun=false
 
-## export to file system and then run off of that
+## export embedded run-list to file system and then run off of that
 deployer export -r hello-world
 deployer execute -r hello-world -s file --dryRun=false
 ```

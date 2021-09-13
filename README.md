@@ -27,9 +27,8 @@ done
 ```
 ### 2. Invoke Configuration (demo application)
 ```shell
-## list available run-lists
-# ./deployer execute -l
-hello-world
+## list available run-lists (returns hello-world)
+./deployer execute -l
 
 ## dry-run hello-world run-list
 ./deployer execute -r hello-world

@@ -14,7 +14,7 @@ var templatesALL embed.FS
 // and uses templates embedded in the binary instead of os directory
 func (x *SDK) ExecuteFromBuild(ctx context.Context, in *ExecuteInput) error {
 	if in.ListOnly {
-		for l := range seededRunLists {
+		for l := range runableAll {
 			fmt.Printf("%s\n", l)
 		}
 		return nil
@@ -24,29 +24,14 @@ func (x *SDK) ExecuteFromBuild(ctx context.Context, in *ExecuteInput) error {
 		return fmt.Errorf("call to ParseFromBuild failed with: %w", err)
 	}
 
-	gg, err := x.Globals()
-	if err != nil {
-		return err
-	}
-
-	l, ok := seededRunLists[in.RunList]
+	l, ok := runableAll[in.RunList]
 	if !ok {
-		return fmt.Errorf("%s run-list not found in seededRunLists", in.RunList)
+		return fmt.Errorf("%s run-list not found in runableAll", in.RunList)
 	}
 
-	for _, d := range l.All {
-		x.log.Printf("... processing %s", d.Name())
-
-		// initialize directive with globals
-		if err := d.Init(x, gg); err != nil {
-			return err
-		}
-
-		// finally execute directive
-		if err := d.Execute(ctx, in); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return l.ExecuteAll(ctx, x.log, x.globals, &DirectiveInput{
+		G:       x.gen,
+		E:       in,
+		Verbose: x.in.Verbose,
+	})
 }

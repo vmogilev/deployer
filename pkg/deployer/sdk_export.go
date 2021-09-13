@@ -9,7 +9,7 @@ import (
 
 func (x *SDK) Export(list string) error {
 	// export run-list
-	l, ok := seededRunLists[list]
+	l, ok := runableAll[list]
 	if !ok {
 		return fmt.Errorf("list %s not found", list)
 	}
@@ -19,7 +19,7 @@ func (x *SDK) Export(list string) error {
 		return err
 	}
 
-	for id, d := range l.All {
+	for id, d := range l.ListAll() {
 		name := d.FileName(id)
 		path := filepath.Join(base, name)
 		x.log.Printf("... exporting %s", path)

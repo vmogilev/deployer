@@ -91,10 +91,13 @@ Concurrency:
 		j.lock()
 		defer j.unlock()
 
-		sdk := deployer.NewSDK(j.log, &deployer.SDKInput{
+		sdk, err := deployer.NewSDK(j.log, &deployer.SDKInput{
 			Verbose: j.verbose,
 			Vars:    vars,
 		})
+		if err != nil {
+			j.abort(err.Error())
+		}
 
 		var exe func(ctx context.Context, in *deployer.ExecuteInput) error
 		switch viper.GetString("source") {

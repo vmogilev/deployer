@@ -26,9 +26,10 @@ type FileGenerator interface {
 }
 
 type SDK struct {
-	in  *SDKInput
-	log SimpleLogger
-	gen FileGenerator
+	in      *SDKInput
+	log     SimpleLogger
+	gen     FileGenerator
+	globals *Attributes
 }
 
 type SDKInput struct {
@@ -36,12 +37,20 @@ type SDKInput struct {
 	Verbose bool
 }
 
-func NewSDK(log SimpleLogger, in *SDKInput) *SDK {
+func NewSDK(log SimpleLogger, in *SDKInput) (*SDK, error) {
+	RegisterDirective(&GenerateFile{})
+	RegisterDirective(&Command{})
+	RegisterDirective(&Symlink{})
+
+	RegisterRunable(RunListHelloWorld)
+
+	gg, err := Globals()
 	return &SDK{
-		in:  in, // input pass through to minimize refactoring
-		log: log,
-		gen: NewGenerator(in.Vars.DeployerConfigDir),
-	}
+		in:      in, // input pass through to minimize refactoring
+		log:     log,
+		gen:     NewGenerator(in.Vars.DeployerConfigDir),
+		globals: gg,
+	}, err
 }
 
 type ExecuteInput struct {

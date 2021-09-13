@@ -35,10 +35,14 @@ var exportCmd = &cobra.Command{
 		}
 		j.init()
 
-		sdk := deployer.NewSDK(j.log, &deployer.SDKInput{
+		sdk, err := deployer.NewSDK(j.log, &deployer.SDKInput{
 			Verbose: j.verbose,
 			Vars:    vars,
 		})
+		if err != nil {
+			j.abort(err.Error())
+		}
+
 		if err := sdk.Export(viper.GetString("runList")); err != nil {
 			j.abort(err.Error())
 		}

@@ -21,7 +21,7 @@ gomod/vendor: ## vendor Go dependencies
 	GOSUMDB=off go mod tidy
 	GOSUMDB=off go mod vendor -v
 
-test/all: test/fmt test/codecov test/lint ## Does all of non e2e testing
+test/all: test/fmt test/codecov ## Does all of non e2e testing
 
 test: ## Perform unit tests
 	@echo "+ $@"
@@ -34,10 +34,6 @@ test/fmt: ## Check if all files (excluding vendor) conform to fmt
 test/codecov:
 	@echo "+ $@"
 	GOFLAGS=-mod=vendor go test -v -count 1 -coverprofile=coverage.txt -covermode=atomic $(TEST_PACKAGES)
-
-test/lint: ## Verifies `golint` passes
-	@echo "+ $@"
-	@golangci-lint run
 
 build: clean ## Build binary and output to /build
 	GOOS=darwin CGO_ENABLED=0 GOFLAGS=-mod=vendor go build -v -installsuffix cgo -ldflags "-X $(INTERNAL_PKG_DIR)/version.Number=$(RELEASE_VER) -X $(INTERNAL_PKG_DIR)/version.BuildTime=$(BUILD_TIME)" -o $(OUTPUT_DIR)/$(BIN)-darwin .

@@ -13,16 +13,21 @@ import (
 // GenerateFile - generates files from template
 // TODO: Mode serializes as decimal and it'd be nice to retain octal format
 type GenerateFile struct {
-	Path     string
-	Owner    string
-	Group    string
-	Mode     os.FileMode
-	Template string
-	Data     map[string]interface{}
-	x        *SDK
+	Path         string
+	Owner        string
+	Group        string
+	Mode         os.FileMode
+	Template     string
+	Data         map[string]interface{}
+	isModified   bool
+	Dependencies []int
 }
 
 const DirectiveNameGenerateFile = "GenerateFile"
+
+func (d *GenerateFile) New() Directive {
+	return &GenerateFile{}
+}
 
 func (d *GenerateFile) Name() string {
 	return DirectiveNameGenerateFile
@@ -50,8 +55,7 @@ func (d *GenerateFile) Hydrate(data []byte) error {
 }
 
 // Init - appends attributes to data
-func (d *GenerateFile) Init(x *SDK, aa *Attributes) error {
-	d.x = x
+func (d *GenerateFile) Init(aa *Attributes) error {
 	if d.Data == nil {
 		d.Data = make(map[string]interface{})
 	}
@@ -66,15 +70,16 @@ func (d *GenerateFile) Init(x *SDK, aa *Attributes) error {
 }
 
 // Execute - applies changes to managed file
-func (d *GenerateFile) Execute(ctx context.Context, in *ExecuteInput) error {
+func (d *GenerateFile) Execute(ctx context.Context, log SimpleLogger, in *DirectiveInput) error {
 	var buf bytes.Buffer
-	if err := d.x.gen.Execute(&buf, d.Template, d.Data); err != nil {
+	if err := in.G.Execute(&buf, d.Template, d.Data); err != nil {
 		return fmt.Errorf("GenerateFile failed to execute %s template with: %w", d.Template, err)
 	}
 
 	const (
 		actionCreate = "create"
 		actionUpdate = "update"
+		actionSkip   = "skip (file unchanged)"
 	)
 
 	action := actionUpdate
@@ -82,6 +87,16 @@ func (d *GenerateFile) Execute(ctx context.Context, in *ExecuteInput) error {
 	if err != nil {
 		if os.IsNotExist(err) {
 			action = actionCreate
+		}
+	}
+
+	if action == actionUpdate {
+		oldData, err := os.ReadFile(d.Path)
+		if err != nil {
+			return err
+		}
+		if res := bytes.Compare(oldData, buf.Bytes()); res == 0 {
+			action = actionSkip
 		}
 	}
 
@@ -103,20 +118,20 @@ func (d *GenerateFile) Execute(ctx context.Context, in *ExecuteInput) error {
 		return err
 	}
 
-	d.x.log.Printf("... ( dryRun=%v ) %s: %s action=%s",
-		in.DryRun,
+	log.Printf("... ( dryRun=%v ) %s: %s action=%s",
+		in.E.DryRun,
 		d.Name(),
 		d.Path,
 		action,
 	)
-	d.x.log.Printf("... ( dryRun=%v ) %s: %s chmod=%s",
-		in.DryRun,
+	log.Printf("... ( dryRun=%v ) %s: %s chmod=%s",
+		in.E.DryRun,
 		d.Name(),
 		d.Path,
 		d.Mode,
 	)
-	d.x.log.Printf("... ( dryRun=%v ) %s: %s chown=%s:%s (%d:%d)",
-		in.DryRun,
+	log.Printf("... ( dryRun=%v ) %s: %s chown=%s:%s (%d:%d)",
+		in.E.DryRun,
 		d.Name(),
 		d.Path,
 		d.Owner,
@@ -124,10 +139,11 @@ func (d *GenerateFile) Execute(ctx context.Context, in *ExecuteInput) error {
 		uid,
 		gid,
 	)
-	if d.x.in.Verbose {
+	if in.Verbose {
 		fmt.Println(buf.String())
 	}
-	if in.DryRun {
+	if in.E.DryRun || action == actionSkip {
+		// TODO: on actionSkip, possibly look into still doing Chmod and Chown
 		return nil
 	}
 
@@ -140,5 +156,14 @@ func (d *GenerateFile) Execute(ctx context.Context, in *ExecuteInput) error {
 	if err := os.Chown(d.Path, uid, gid); err != nil {
 		return fmt.Errorf("chown failed with: %w", err)
 	}
+	d.isModified = true
 	return nil
+}
+
+func (d *GenerateFile) IsModified() bool {
+	return d.isModified
+}
+
+func (d *GenerateFile) DependsOn() []int {
+	return d.Dependencies
 }

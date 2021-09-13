@@ -41,6 +41,7 @@ func NewSDK(log SimpleLogger, in *SDKInput) (*SDK, error) {
 	RegisterDirective(&GenerateFile{})
 	RegisterDirective(&Command{})
 	RegisterDirective(&Symlink{})
+	RegisterDirective(&OsPackage{})
 
 	RegisterRunable(RunListHelloWorld)
 

@@ -87,7 +87,7 @@ func (l *RunList) ExecuteAll(ctx context.Context, log SimpleLogger, globals *Att
 		}
 
 		if !execute {
-			log.Printf("... skipping %s since it's dependency wasn't modified", d)
+			log.Printf("... skipping %s since none of its dependencies are modified", d)
 			continue
 		}
 

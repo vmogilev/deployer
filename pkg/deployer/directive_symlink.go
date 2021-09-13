@@ -57,7 +57,10 @@ func (d *Symlink) Execute(ctx context.Context, log SimpleLogger, in *DirectiveIn
 	if d.Create {
 		return d.create(ctx, log, in)
 	}
-	return d.delete(ctx, log, in)
+	if d.Delete {
+		return d.delete(ctx, log, in)
+	}
+	return fmt.Errorf("no action specified")
 }
 
 func (d *Symlink) IsModified() bool {

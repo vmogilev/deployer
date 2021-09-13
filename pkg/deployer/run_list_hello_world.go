@@ -10,6 +10,14 @@ var RunListHelloWorld = &RunList{
 		&Command{
 			Run: "apt-get update",
 		},
+		&OsPackage{
+			PkgName: "nginx",
+			Install: true,
+		},
+		&OsPackage{
+			PkgName: "php-fpm",
+			Install: true,
+		},
 		&GenerateFile{
 			Path:     "/etc/nginx/sites-available/hello-world.com",
 			Owner:    "www-data",
@@ -37,13 +45,19 @@ var RunListHelloWorld = &RunList{
 		},
 		&Command{
 			Run: "nginx -t",
-			// we don't care testing nginx unless /etc/nginx/sites-available/hello-world.com was modified
-			Dependencies: []int{1},
+			// we don't care testing nginx unless either of these are true:
+			//   nginx installed
+			//   php-fpm installed
+			//   /etc/nginx/sites-available/hello-world.com was modified
+			Dependencies: []int{1, 2, 3},
 		},
 		&Command{
 			Run: "systemctl reload nginx",
-			// no need to reload nginx unless /etc/nginx/sites-available/hello-world.com was modified
-			Dependencies: []int{1},
+			// no need to reload nginx unless either of these are true:
+			//   nginx installed
+			//   php-fpm installed
+			//   /etc/nginx/sites-available/hello-world.com was modified
+			Dependencies: []int{1, 2, 3},
 		},
 	},
 }
